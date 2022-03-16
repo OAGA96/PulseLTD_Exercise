@@ -138,6 +138,7 @@
       <DependentUpon>PulseLTDModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\PhotoAlbumValidation.cs" />
+    <Compile Include="Models\PhotoAlbumViewModel.cs" />
     <Compile Include="Models\PulseLTDModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

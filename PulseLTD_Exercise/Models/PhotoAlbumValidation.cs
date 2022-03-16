@@ -31,9 +31,9 @@ namespace PulseLTD_Exercise.Models
         [Display(Name = "Image")]
         public object ImageText { get; set; }
 
-        [Required(ErrorMessage = "{0} is required.")]
-        [Display(Name = "DateTime")]
-        [DataType(DataType.DateTime)]
+        //[Required(ErrorMessage = "{0} is required.")]
+        //[Display(Name = "DateTime")]
+        //[DataType(DataType.DateTime)]
         public object ImageDateTime { get; set; }
     }
 }

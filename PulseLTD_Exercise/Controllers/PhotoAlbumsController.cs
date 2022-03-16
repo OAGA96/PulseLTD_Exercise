@@ -46,12 +46,12 @@ namespace PulseLTD_Exercise.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ImageId,ImageTitle,ImageName,ImageText,ImageDateTime")] PhotoAlbum photoAlbum)
+        //[ValidateAntiForgeryToken]
+        public ActionResult Create([Bind(Include = "ImageId,ImageTitle,ImageName,ImageText,ImageDateTime")] PhotoAlbum photoAlbum, HttpPostedFileBase file)
         {
-            HttpPostedFileBase photoFileBase =Request.Files[0];
+            //HttpPostedFileBase photoFileBase =Request.Files[0];
 
-            WebImage image = new WebImage(photoFileBase.InputStream);
+            WebImage image = new WebImage(file.InputStream);
 
             photoAlbum.ImageText = image.GetBytes();
 
@@ -63,6 +63,30 @@ namespace PulseLTD_Exercise.Controllers
             }
 
             return View(photoAlbum);
+        }
+
+        [HttpPost]
+        public ActionResult PostImage(string title, string name/*, HttpPostedFileBase file*/)
+        {
+            if (Request.Files.Count > 0)
+            {
+                Console.WriteLine(Request.Files.ToString());
+                HttpPostedFileBase postedFileBase = Request.Files[0];
+                WebImage image = new WebImage(postedFileBase.InputStream);
+                PhotoAlbum photoAlbum = new PhotoAlbum();
+                photoAlbum.ImageTitle = title;
+                photoAlbum.ImageName = name;
+                photoAlbum.ImageDateTime = DateTime.Now;
+                photoAlbum.ImageText = image.GetBytes();
+                if (ModelState.IsValid)
+                {
+                    db.PhotoAlbums.Add(photoAlbum);
+                    db.SaveChanges();
+                    return Json("success");
+                }
+                return Json("");
+            }
+            else return Json("No files to upload");
         }
 
         // GET: PhotoAlbums/Edit/5
@@ -95,6 +119,7 @@ namespace PulseLTD_Exercise.Controllers
             }
             return View(photoAlbum);
         }
+
 
         // GET: PhotoAlbums/Delete/5
         public ActionResult Delete(int? id)

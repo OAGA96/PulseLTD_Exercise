@@ -11,7 +11,8 @@ namespace PulseLTD_Exercise.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.Web;
+
     public partial class PhotoAlbum
     {
         public int ImageId { get; set; }
@@ -19,5 +20,6 @@ namespace PulseLTD_Exercise.Models
         public string ImageName { get; set; }
         public byte[] ImageText { get; set; }
         public Nullable<System.DateTime> ImageDateTime { get; set; }
+        //public HttpPostedFileBase ImageFile { get; set; }
     }
 }

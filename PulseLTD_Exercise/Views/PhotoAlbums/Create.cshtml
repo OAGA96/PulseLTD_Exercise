@@ -5,11 +5,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
+<h2>Post</h2>
 
 
 @*using (Html.BeginForm())*@
-@using(Ajax.BeginForm("Post", "PhotoAlbums", null,
+@using (Ajax.BeginForm("Post", "PhotoAlbums/PostImage", null,
                         new AjaxOptions
                         {
                             HttpMethod = "Post",
@@ -18,10 +18,10 @@
                             OnFailure = "onFailureResult",
                             OnSuccess = "onSuccessResult",
                             InsertionMode = InsertionMode.Replace
-                        }, new {id="AjaxForm"}))
+                        }, new { id = "AjaxForm" }))
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>PhotoAlbum</h4>
         <hr />
@@ -29,7 +29,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ImageTitle, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ImageTitle, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.TextBoxFor(model => model.ImageTitle, new { @class = "form-control", id = "ImageTitle", placeholder = "Image Title" })
                 @Html.ValidationMessageFor(model => model.ImageTitle, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -37,7 +37,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ImageName, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ImageName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.EditorFor(model => model.ImageName, new { @class = "form-control", id = "ImageName", placeholder = "Image Name" })
                 @Html.ValidationMessageFor(model => model.ImageName, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -45,39 +45,40 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ImageText, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
+                <input type="file" accept="image/*" id="UploadedImage"/>
                 @Html.EditorFor(model => model.ImageText, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.ImageText, "", new { @class = "text-danger" })
             </div>
         </div>
 
-        <div class="form-group">
+        @*<div class="form-group">
             @Html.LabelFor(model => model.ImageDateTime, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ImageDateTime, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.TextBoxFor(model => model.ImageDateTime, "{0dd/MM/yyyy}", new { @class = "form-control input-md", id = "ImageDateTime", placeholder = "dd/MM/yyyy" })
                 @Html.ValidationMessageFor(model => model.ImageDateTime, "", new { @class = "text-danger" })
             </div>
-        </div>
+        </div>*@
 
         @*<div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
-        </div>*@
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </div>*@
     </div>
-    <div class="row" >
-        <div class="col-md-9" >
-            <div id="ErrorAlert" class="alert alert-danger" style="display:none" role="alert"  >
+    <div class="row">
+        <div class="col-md-9">
+            <div id="ErrorAlert" class="alert alert-danger" style="display:none" role="alert">
                 Error submiting data.
             </div>
-            <div id="SuccessAlert" class="alert alert-success" style="display:none" role="alert" >
+            <div id="SuccessAlert" class="alert alert-success" style="display:none" role="alert">
                 Data submitted succesfully.
             </div>
         </div>
-        <div class="col-md-3" >
-            <div class="form-group float-right " >
+        <div class="col-md-3">
+            <div class="form-group float-right ">
                 @*<img id="AjaxLoader" alt="Submiting..." style="display:none"  />*@
-                <button id="SubmitBtn" type="submit" class="btn btn-primary" >
-                    <i class="glyphicon glyphicon-send" ></i>
+                <button id="SubmitBtn" type="submit" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-send"></i>
                     &nbsp;Submit Photo
                 </button>
             </div>
@@ -87,10 +88,67 @@
 }
 
 <div>
-    @Html.ActionLink("Back to List", "Index")
+    @Html.ActionLink("View List", "Index")
 </div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryajax")
     @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var onBeginSubmit = function () {
+            //$("#AjaxLoader").show("fast");
+            $("#SubmitBtn").prop("disabled", true);
+        }
+    </script>
+    
+    <script>
+        var onSuccessResult = function () {
+            $("#AjaxForm").trigger('reset');
+            $("#SubmitBtn").prop("disabled", false);
+            $("#SuccessAlert").show('slow').delay(2000).hide('slow');
+        };
+    </script>
+
+    <script>
+        var onFailureResult = function () {
+            $("#SubmitBtn").prop("disabled", false);
+            $("#ErrorAlert").show("slow").delay(2000).hide("slow");
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#SubmitBtn").click(function () {
+                var data = new FormData;
+                var title = $("#ImageTitle").val();
+                var text = $("#ImageName").val();
+                var image = $("#UploadedImage").get(0);
+                var files = image.files;
+                data.append("Title", title);
+                data.append("Name", text);
+                data.append("file", files[0]);
+                //data.append("ImageDateTime", datetime);
+
+                $.ajax({
+                    type: 'post',
+                    url: '/PhotoAlbums/PostImage',
+                    data: data,
+                    dataType: 'json',
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        //debbuger;
+                        //alert(response.ImageTitle);
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText)
+                    }
+                })
+            })
+        })
+    </script>
 }
