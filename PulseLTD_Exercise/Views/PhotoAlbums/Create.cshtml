@@ -45,7 +45,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ImageText, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                <input type="file" accept="image/*" id="UploadedImage"/>
+                <input name="inputImage" type="file" accept="image/*" id="UploadedImage"/>
                 @Html.EditorFor(model => model.ImageText, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.ImageText, "", new { @class = "text-danger" })
             </div>
@@ -129,25 +129,33 @@
                 data.append("Name", text);
                 data.append("file", files[0]);
                 //data.append("ImageDateTime", datetime);
-
-                $.ajax({
-                    type: 'post',
-                    url: '/PhotoAlbums/PostImage',
-                    data: data,
-                    dataType: 'json',
-                    contentType: false,
-                    processData: false,
-                    success: function (response) {
-                        //debbuger;
-                        //alert(response.ImageTitle);
-                    },
-                    failure: function (response) {
-                        alert(response.responseText);
-                    },
-                    error: function (response) {
-                        alert(response.responseText)
+                if ($("#UploadedImage")[0].files.length === 0) {
+                    alert('select an image.')
+                } else {
+                    if (title.length >= 4 && title.length <= 100 && text.length >= 1) {
+                        $.ajax({
+                            type: 'post',
+                            url: '/PhotoAlbums/PostImage',
+                            data: data,
+                            dataType: 'json',
+                            contentType: false,
+                            processData: false,
+                            success: function (response) {
+                                //debbuger;
+                                //alert(response.ImageTitle);
+                            },
+                            failure: function (response) {
+                                alert(response.responseText);
+                            },
+                            error: function (response) {
+                                alert(response.responseText)
+                            }
+                        })
+                    } else {
+                        alert('Check fields.')
                     }
-                })
+                    
+                }
             })
         })
     </script>
