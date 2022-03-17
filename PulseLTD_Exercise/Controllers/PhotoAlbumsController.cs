@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
+using ICSharpCode.SharpZipLib.Zip;
 using PulseLTD_Exercise.Models;
 
 namespace PulseLTD_Exercise.Controllers
@@ -34,6 +37,45 @@ namespace PulseLTD_Exercise.Controllers
                 return HttpNotFound();
             }
             return View(photoAlbum);
+        }
+
+        [HttpPost]
+        public ActionResult DownloadImages(int[] ids)
+        {
+            try
+            {
+                if (ids == null)
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                }
+                List<PhotoAlbum> photoAlbums = new List<PhotoAlbum>();
+                foreach (int id in ids) { photoAlbums.Add(db.PhotoAlbums.Find(id)); }
+
+                //return File(photoAlbums[0].ImageText, "image/png");
+
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, true))
+                    {
+                        for (int i = 0; i < photoAlbums.Count; i++)
+                        {
+                            PhotoAlbum photoAlbum = photoAlbums[i];
+                            var entry = archive.CreateEntry(photoAlbum.ImageName + ".jpg", CompressionLevel.Fastest);
+                            using (var zipStream = entry.Open())
+                            {
+                                zipStream.Write(photoAlbum.ImageText, 0, photoAlbum.ImageText.Length);
+                            }
+                        }
+                    }
+                    return File(stream.ToArray(), "application/zip", "Images.zip");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            }
         }
 
         // GET: PhotoAlbums/Create

@@ -10,8 +10,12 @@
 <p>
     @Html.ActionLink("Create New", "Create")
 </p>
-<table class="table">
+<button id="download" class="btn-primary"  >Download</button>
+<table id="dataTable" class="table table-hover">
     <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ImageId)
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.ImageTitle)
         </th>
@@ -19,34 +23,109 @@
             @Html.DisplayNameFor(model => model.ImageName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ImageText)
+            Image
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ImageDateTime)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ImageText)
+        </th>
+
         <th></th>
     </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.ImageTitle)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ImageName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ImageText)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ImageDateTime)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ImageId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ImageId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ImageId })
-        </td>
-    </tr>
-}
-
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="" >
+                <td class="ImageId">
+                    @Html.DisplayFor(modelItem => item.ImageId)
+                </td>
+                <td>
+                    <p id="Title" >@item.ImageTitle</p>
+                    @*@Html.DisplayFor(modelItem => item.ImageTitle)*@
+                </td>
+                <td >
+                    @Html.DisplayFor(modelItem => item.ImageName)
+                </td>
+                <td>
+                    <img src="data:image;base64,@System.Convert.ToBase64String(item.ImageText)" width="80" height="80" />
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ImageDateTime)
+                </td>
+                <td>
+                    <p style="width:200px; overflow:hidden; text-overflow:ellipsis">
+                        @Html.DisplayFor(modelItem => item.ImageText)
+                    </p>
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.ImageId }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.ImageId }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.ImageId })
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
+<a></a>
+
+@section Scripts {
+
+    <script>
+        $("#dataTable > tbody > tr").click(function () {
+            $(this).toggleClass("bg-info");
+        })
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#download").click(function () {
+                var ids = new Array();
+                $(".bg-info td").each(function (index, element) {
+                    if (element.className == "ImageId") {
+                        ids.push(parseInt(element.innerText));
+                    } else {
+                        console.log("no id")
+                    }
+
+                })
+                if (ids.length === 0) {
+                    alert("Select at least one row");
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/PhotoAlbums/DownloadImages',
+                        data: { ids: ids },
+                        xhrFields: {
+                            responseType: 'blob'
+                        },
+                        success: function (blob, status, xhr) {
+                            var filename = "Images.zip";
+                            if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                                window.navigator.msSaveBlob(blob, filename);
+                            } else {
+                                var URL = window.URL || window.webkitURL;
+                                var downloadUrl = URL.createObjectURL(blob);
+                                if (filename) {
+                                    var a = document.createElement("a");
+                                    if (typeof a.download === 'undefined') {
+                                        window.location.href = downloadUrl;
+                                    } else {
+                                        a.href = downloadUrl;
+                                        a.download = filename;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                    }
+                                } else {
+                                    window.location.href = downloadUrl;
+                                }
+                                setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100);
+                            }
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+}
